@@ -1,0 +1,13 @@
+# Blender MTL File: 'hammer.blend'
+# Material Count: 1
+
+newmtl _H_Hammer1_0
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.039568 0.039568 0.039568
+Ni 1.000000
+d 1.000000
+illum 2
+map_Bump /home/robert/Downloads/WeaponS/hammer/tex/hammer_n.jpg
+map_Kd /home/robert/Downloads/WeaponS/hammer/tex/hammer_d.jpg
