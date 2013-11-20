@@ -58,6 +58,11 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         ResourceLoader loader = ResourceLoader.getResourceLoader();
         mMesh = loader.getMeshByName("hammer");
         mMesh.initialize();
+        
+     
+        GLES20.glEnable(GL10.GL_CULL_FACE);
+        //GLES20.glCullFace(GL10.GL_BACK);
+        
         //mTriangle = new Triangle();
         //mSquare   = new Square();
     }
@@ -69,7 +74,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         // Set the camera position (View matrix)
-        Matrix.setLookAtM(mVMatrix, 0, 0, 0, -5, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+        Matrix.setLookAtM(mVMatrix, 0, 0, 0, -5, 0f, 0f, 0f, 0f, 5.0f, 0.0f);
 
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mVMatrix, 0);
