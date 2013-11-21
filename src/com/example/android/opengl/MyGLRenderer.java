@@ -59,9 +59,11 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         mMesh = loader.getMeshByName("hammer");
         mMesh.initialize();
         
-     
+        /* the depth testing functions */
+        GLES20.glDepthFunc(GL10.GL_LEQUAL);
+        GLES20.glEnable(GL10.GL_DEPTH_TEST);
         GLES20.glEnable(GL10.GL_CULL_FACE);
-        //GLES20.glCullFace(GL10.GL_BACK);
+        GLES20.glCullFace(GL10.GL_BACK);
         
         //mTriangle = new Triangle();
         //mSquare   = new Square();
@@ -71,7 +73,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 unused) {
 
         // Draw background color
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         // Set the camera position (View matrix)
         Matrix.setLookAtM(mVMatrix, 0, 0, 0, -5, 0f, 0f, 0f, 0f, 5.0f, 0.0f);
