@@ -118,6 +118,7 @@ public class ResourceLoader {
 					
 					faces.addAll(indices);
 				}
+				
 				else if (words[0].equals("vn"))
 				{
 					float x = Float.parseFloat(words[1]);
@@ -144,16 +145,16 @@ public class ResourceLoader {
 				f[i++] = face;
 			}
 			
-			/*
+			
 			i = 0;
 			float[] vn = new float[vertexNormals.size()];
 			for (Float n : vertexNormals)
 			{
 				vn[i++] = n;
 			}
-			*/
 			
-			Mesh mesh = new Mesh(v, f);
+			
+			Mesh mesh = new Mesh(v, f, vn);
 			meshes.put(meshName, mesh);
 			
 		} catch (IOException ex)
