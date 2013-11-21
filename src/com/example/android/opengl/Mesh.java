@@ -12,12 +12,26 @@ public class Mesh {
 	
 	public static final String TAG = "Mesh";
 
-    private  FloatBuffer vertexBuffer;
-    private  ShortBuffer drawListBuffer;
+    private FloatBuffer vertexBuffer;
+    private ShortBuffer drawListBuffer;
+    private FloatBuffer normalsBuffer;
+    
     private int mProgram;
     private int mPositionHandle;
+    private int mNormalsHandle;
+    
     private int mColorHandle;
     private int mMVPMatrixHandle;
+    
+    private float[] lightPos = {5,5,0};
+    // private float[] globalAmbient = {.2f,.2f,.2f,1};
+    
+    /*
+    private float[] lightAmbient = {1,1,1,1};
+    private float[] lightDiffuse = {.5f,.5f,.5f,1};
+    private float[] materialAmbient = {.5f,.5f,.5f,1};
+    private float[] materialDiffuse = {.5f,.5f,.5f,1};
+    */
 
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
@@ -34,23 +48,39 @@ public class Mesh {
     //private float vertices[];
     private final short faces[];
     private final float vertices[];
-    //private final float vn[];
+    private final float vn[];
     
     //private final float textureCoords[];
     
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
 
     // Set color with red, green, blue and alpha (opacity) values
-    float color[] = { 0.2f, 0.709803922f, 0.898039216f, 1.0f };
-
-    public Mesh(float[] vertices, short[] faces) {
+    //float color[] = { 0.2f, 0.709803922f, 0.898039216f, 1.0f };
+    float color[] = { 1.0f, 0.709803922f, 0.898039216f, 1.0f };
+    
+    public Mesh(float[] vertices, short[] faces, float[] vn) {
     	
     	//this.vertices = vertices;
     	this.faces = faces;
     	this.vertices = vertices;
-    	//this.vn = vn;
+    	this.vn = vn;
     	//this.textureCoords = textureCoords;
        
+    }
+    
+    public void setLighting(float[] mvMatrix)
+    {
+    	 int mvMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVMatrix");
+    	 MyGLRenderer.checkGlError("get model view matrix");
+    	 int lightLocHandle = GLES20.glGetUniformLocation(mProgram, "u_LightPos");
+    	 MyGLRenderer.checkGlError("get light location");
+    	 	 
+    	 GLES20.glUniformMatrix4fv(mvMatrixHandle, 1, false, mvMatrix, 0);
+         MyGLRenderer.checkGlError("set model view matrix");
+    	 
+         GLES20.glUniform3fv(lightLocHandle, 1, lightPos, 0);
+         MyGLRenderer.checkGlError("light location set");
+              
     }
     
     public void initialize()
@@ -73,6 +103,15 @@ public class Mesh {
         drawListBuffer.put(faces);
         drawListBuffer.position(0);
         
+        
+        /* initialize the normals */
+        ByteBuffer nlb = ByteBuffer.allocateDirect(
+        		vn.length * 4);
+        nlb.order(ByteOrder.nativeOrder());
+        normalsBuffer = nlb.asFloatBuffer();
+        normalsBuffer.put(this.vn);
+        normalsBuffer.position(0);
+        
         String vertexSource = ResourceLoader.getResourceLoader().readTextFile("shaders/basic.vs");
         String fragSource = ResourceLoader.getResourceLoader().readTextFile("shaders/basic.fs");
 
@@ -92,44 +131,47 @@ public class Mesh {
         GLES20.glAttachShader(mProgram, vertexShader);   // add the vertex shader to program
         GLES20.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
         GLES20.glLinkProgram(mProgram);                  // create OpenGL program executables
+        MyGLRenderer.checkGlError("linking the shader");
+        
+        Log.v(TAG, "Loading shader successful");
     }
 
-    public void draw(float[] mvpMatrix) {
+    public void draw(float[] mvpMatrix, float[] mvMatrix) {
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
-
-        // get handle to vertex shader's vPosition member
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
+        MyGLRenderer.checkGlError("Use program");
         
+        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "a_Position");
+        MyGLRenderer.checkGlError("get Position attribute");
+        mNormalsHandle = GLES20.glGetAttribLocation(mProgram, "a_Normal");
+        MyGLRenderer.checkGlError("get Normals attribute");
+        mColorHandle = GLES20.glGetUniformLocation(mProgram, "u_Color");
+        MyGLRenderer.checkGlError("get Color uniform");
         
-        // Enable a handle to the triangle vertices
         GLES20.glEnableVertexAttribArray(mPositionHandle);
+        GLES20.glEnableVertexAttribArray(mNormalsHandle);
 
-        // Prepare the triangle coordinate data
         GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX,
                                      GLES20.GL_FLOAT, false,
                                      vertexStride, vertexBuffer);
         
+         
+        GLES20.glVertexAttribPointer(mNormalsHandle, COORDS_PER_VERTEX, 
+        		GLES20.GL_FLOAT, false, 
+        		vertexStride, normalsBuffer);
+        
 
-        // get handle to fragment shader's vColor member
-        mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
-
-        // Set color for drawing the triangle
         GLES20.glUniform4fv(mColorHandle, 1, color, 0);
 
-        // get handle to shape's transformation matrix
-        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
-        MyGLRenderer.checkGlError("glGetUniformLocation");
+     
+        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVPMatrix");
+        MyGLRenderer.checkGlError("get MVP Matrix Uniform");
         
         // Apply the projection and view transformation
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
-        MyGLRenderer.checkGlError("glUniformMatrix4fv");
+        MyGLRenderer.checkGlError("set MVP Matrix Uniform");
         
-        //int mMVMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVMatrix");
-        //MyGLRenderer.checkGlError("glGetUniformLocation");
-        
-        //GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mvMatrix, 0);
-        //MyGLRenderer.checkGlError("glUniformMatrix4fv");
+        setLighting(mvMatrix);     
         
         // Draw the square
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, faces.length,
