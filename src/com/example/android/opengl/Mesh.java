@@ -23,7 +23,7 @@ public class Mesh {
     private int mColorHandle;
     private int mMVPMatrixHandle;
     
-    private float[] lightPos = {5,5,0};
+    private float[] lightPos = {2,5,2};
     // private float[] globalAmbient = {.2f,.2f,.2f,1};
     
     /*
