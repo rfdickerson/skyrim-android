@@ -11,6 +11,9 @@ import java.util.Map;
 
 import android.app.Activity;
 import android.content.res.AssetManager;
+import android.opengl.ETC1Util;
+import android.opengl.GLES10;
+import android.opengl.GLES20;
 import android.util.Log;
 
 public class ResourceLoader {
@@ -90,6 +93,55 @@ public class ResourceLoader {
 	}
 	
 	
+	public int loadTexture(String filename)
+	{
+		final int[] textureHandle = new int[1];
+		
+		Log.w(TAG, "ETC1 texture support: " + ETC1Util.isETC1Supported());
+		
+		GLES20.glGenTextures(1, textureHandle, 0);
+		
+		//BufferedReader br = null;
+		AssetManager assetMgr = mActivity.getAssets();
+		InputStream is = null;
+		
+		try {
+			is = assetMgr.open(filename,
+					AssetManager.ACCESS_STREAMING);
+			
+			  GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
+			  
+		        // Set filtering
+		        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+		        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+		 
+		        
+			ETC1Util.loadTexture(GLES10.GL_TEXTURE_2D, 0, 0, GLES10.GL_RGB, GLES10.GL_UNSIGNED_SHORT_5_6_5, is);
+			
+			Log.v(TAG, "Loaded texture: " + filename);
+			
+		} catch (IOException ex)
+		{
+			
+		} finally {
+			try {
+				if (is != null){
+					is.close();
+				}
+			} catch (IOException e) {
+				
+			}
+		}
+		
+		if (textureHandle[0] == 0)
+	    {
+	        throw new RuntimeException("Error loading texture.");
+	    }
+		
+		return textureHandle[0];
+		
+	}
+	
 	public void loadMesh(String meshName, String fileName)
 	{
 		
@@ -99,6 +151,7 @@ public class ResourceLoader {
 		
 		List<Vector3> vertices = new ArrayList<Vector3>();
 		List<Vector3> vertexNormals = new ArrayList<Vector3>();
+		List<Float> textureVertices = new ArrayList<Float>();
 		
 		
 		//List<Float> newNormals = new ArrayList<Float>();
@@ -131,6 +184,16 @@ public class ResourceLoader {
 					
 					
 				}
+				else if (words[0].equals("vt"))
+				{
+					float u = Float.parseFloat(words[1]);
+					float v = Float.parseFloat(words[2]);
+					
+					textureVertices.add(u);
+					textureVertices.add(v);
+					
+				}
+				
 				else if (words[0].equals("f"))
 				{				
 					parseFace(words, vertexIndices, textureIndices, normalIndices);			
@@ -205,9 +268,45 @@ public class ResourceLoader {
 				vn[i++] = vertex.z;
 			}
 			
+			i = 0;
+			int j=0;
+			float[] uv = new float[3*textureVertices.size()];
+			for (i=0;i<textureIndices.size();i+=3)
+			{
+				float ucoord, vcoord;
+				
+				short s1 = textureIndices.get(i);
+				short s2 = textureIndices.get(i+1);
+				short s3 = textureIndices.get(i+2);
+				
+				ucoord = textureVertices.get(s1*2);
+				vcoord = textureVertices.get(s1*2 + 1);
+				uv[j++] = ucoord;
+				uv[j++] = 1-vcoord;
+				
+				ucoord = textureVertices.get(s2*2);
+				vcoord = textureVertices.get(s2*2 + 1);
+				uv[j++] = ucoord;
+				uv[j++] = 1-vcoord;
+				
+				ucoord = textureVertices.get(s3*2);
+				vcoord = textureVertices.get(s3*2 + 1);
+				uv[j++] = ucoord;
+				uv[j++] = 1-vcoord;
+				
+				
+				
+				
+				
+				
+				
+			}
 			
-			Mesh mesh = new Mesh(v, f, vn);
+			
+			Mesh mesh = new Mesh(v, f, vn, uv);
 			meshes.put(meshName, mesh);
+			
+			Log.v(TAG, "Successfully loaded model from OBJ");
 			
 		} catch (IOException ex)
 		{

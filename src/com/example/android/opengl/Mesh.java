@@ -5,6 +5,8 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
+//import javax.microedition.khronos.opengles.GL10;
+
 import android.opengl.GLES20;
 import android.util.Log;
 
@@ -15,6 +17,7 @@ public class Mesh {
     private FloatBuffer vertexBuffer;
     private ShortBuffer drawListBuffer;
     private FloatBuffer normalsBuffer;
+    private FloatBuffer texCoordsBuffer;
     
     private int mProgram;
     private int mPositionHandle;
@@ -22,8 +25,12 @@ public class Mesh {
     
     private int mColorHandle;
     private int mMVPMatrixHandle;
+    private int mTextureUniformHandle;
+    private int mTextureCoordinateHandle;
+    private final int mTextureCoordinateDataSize = 2;
+    private int mTextureDataHandle;
     
-    private float[] lightPos = {2,5,2};
+    private float[] lightPos = {1,2,2};
     // private float[] globalAmbient = {.2f,.2f,.2f,1};
     
     /*
@@ -35,6 +42,7 @@ public class Mesh {
 
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
+    //static final int TEX_COORDS_PER_VERTEX = 2;
     
     /*
     static float squareCoords[] = { -0.5f,  0.5f, 0.0f,   // top left
@@ -49,21 +57,24 @@ public class Mesh {
     private final short faces[];
     private final float vertices[];
     private final float vn[];
+    private final float uv[];
     
     //private final float textureCoords[];
     
+    private final int texVertexStride = mTextureCoordinateDataSize * 4;
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
 
     // Set color with red, green, blue and alpha (opacity) values
     //float color[] = { 0.2f, 0.709803922f, 0.898039216f, 1.0f };
     float color[] = { 1.0f, 0.709803922f, 0.898039216f, 1.0f };
     
-    public Mesh(float[] vertices, short[] faces, float[] vn) {
+    public Mesh(float[] vertices, short[] faces, float[] vn, float[] uv) {
     	
     	//this.vertices = vertices;
     	this.faces = faces;
     	this.vertices = vertices;
     	this.vn = vn;
+    	this.uv = uv;
     	//this.textureCoords = textureCoords;
        
     }
@@ -103,7 +114,6 @@ public class Mesh {
         drawListBuffer.put(faces);
         drawListBuffer.position(0);
         
-        
         /* initialize the normals */
         ByteBuffer nlb = ByteBuffer.allocateDirect(
         		vn.length * 4);
@@ -111,6 +121,14 @@ public class Mesh {
         normalsBuffer = nlb.asFloatBuffer();
         normalsBuffer.put(this.vn);
         normalsBuffer.position(0);
+        
+        /* setup UV texcoords */
+        ByteBuffer uvlb = ByteBuffer.allocateDirect(
+        		uv.length * 4);
+        uvlb.order(ByteOrder.nativeOrder());
+        texCoordsBuffer = uvlb.asFloatBuffer();
+        texCoordsBuffer.put(this.uv);
+        texCoordsBuffer.position(0);
         
         String vertexSource = ResourceLoader.getResourceLoader().readTextFile("shaders/basic.vs");
         String fragSource = ResourceLoader.getResourceLoader().readTextFile("shaders/basic.fs");
@@ -133,6 +151,10 @@ public class Mesh {
         GLES20.glLinkProgram(mProgram);                  // create OpenGL program executables
         MyGLRenderer.checkGlError("linking the shader");
         
+        ResourceLoader loader = ResourceLoader.getResourceLoader();
+        
+        mTextureDataHandle = loader.loadTexture("textures/cube.etc");
+        
         Log.v(TAG, "Loading shader successful");
     }
 
@@ -145,11 +167,17 @@ public class Mesh {
         MyGLRenderer.checkGlError("get Position attribute");
         mNormalsHandle = GLES20.glGetAttribLocation(mProgram, "a_Normal");
         MyGLRenderer.checkGlError("get Normals attribute");
+         
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "u_Color");
         MyGLRenderer.checkGlError("get Color uniform");
+        mTextureUniformHandle = GLES20.glGetUniformLocation(mProgram, "u_Texture");
+        mTextureCoordinateHandle = GLES20.glGetAttribLocation(mProgram, "a_TexCoordinate");
         
         GLES20.glEnableVertexAttribArray(mPositionHandle);
         GLES20.glEnableVertexAttribArray(mNormalsHandle);
+        GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
+        
+        
 
         GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX,
                                      GLES20.GL_FLOAT, false,
@@ -159,7 +187,12 @@ public class Mesh {
         GLES20.glVertexAttribPointer(mNormalsHandle, COORDS_PER_VERTEX, 
         		GLES20.GL_FLOAT, false, 
         		vertexStride, normalsBuffer);
+        MyGLRenderer.checkGlError("set normals attribute pointer");
         
+        GLES20.glVertexAttribPointer(mTextureCoordinateHandle, mTextureCoordinateDataSize, 
+        		GLES20.GL_FLOAT, false, 
+        		texVertexStride, texCoordsBuffer);
+        MyGLRenderer.checkGlError("set texture coordinate attribute pointer");
 
         GLES20.glUniform4fv(mColorHandle, 1, color, 0);
 
@@ -173,11 +206,22 @@ public class Mesh {
         
         setLighting(mvMatrix);     
         
+        // texture stuff
+
+     
+        //GLES20.glEnable(GL10.GL_TEXTURE_2D);
+        
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureDataHandle);
+        GLES20.glUniform1i(mTextureUniformHandle, 0);
+        
         // Draw the square
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, faces.length,
                               GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
+        GLES20.glDisableVertexAttribArray(mNormalsHandle);
+        GLES20.glDisableVertexAttribArray(mTextureCoordinateHandle);
     }
 }
