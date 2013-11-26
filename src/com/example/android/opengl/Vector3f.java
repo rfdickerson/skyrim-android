@@ -1,12 +1,12 @@
 package com.example.android.opengl;
 
-public class Vector3 {
+public class Vector3f {
 
 	public float x;
 	public float y;
 	public float z;
 	
-	public Vector3(float x, float y, float z)
+	public Vector3f(float x, float y, float z)
 	{
 		this.x = x;
 		this.y = y;
@@ -32,31 +32,31 @@ public class Vector3 {
 		this.z = this.z/mag;
 	}
 	
-	public static Vector3 cross(Vector3 a, Vector3 b)
+	public static Vector3f cross(Vector3f a, Vector3f b)
 	{
 		float s1 = a.y * b.z - a.z * b.y;
 		float s2 = a.z * b.x - a.x * b.z;
 		float s3 = a.x * b.y - a.y * b.x;
 		
-		return new Vector3(s1, s2, s3);
+		return new Vector3f(s1, s2, s3);
 	}
 	
-	public Vector3 sub(Vector3 v)
+	public Vector3f sub(Vector3f v)
 	{
 		float dx = this.x - v.x;
 		float dy = this.y - v.y;
 		float dz = this.z - v.z;
 		
-		return new Vector3(dx, dy, dz);
+		return new Vector3f(dx, dy, dz);
 	}
 	
-	public Vector3 add(Vector3 v)
+	public Vector3f add(Vector3f v)
 	{
 		float dx = this.x + v.x;
 		float dy = this.y + v.y;
 		float dz = this.z + v.z;
 		
-		return new Vector3(dx, dy, dz);
+		return new Vector3f(dx, dy, dz);
 	}
 	
 	

@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.List;
 
 //import javax.microedition.khronos.opengles.GL10;
 
@@ -31,33 +32,16 @@ public class Mesh {
     private int mTextureDataHandle;
     
     private float[] lightPos = {1,2,2};
-    // private float[] globalAmbient = {.2f,.2f,.2f,1};
-    
-    /*
-    private float[] lightAmbient = {1,1,1,1};
-    private float[] lightDiffuse = {.5f,.5f,.5f,1};
-    private float[] materialAmbient = {.5f,.5f,.5f,1};
-    private float[] materialDiffuse = {.5f,.5f,.5f,1};
-    */
-
+  
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
-    //static final int TEX_COORDS_PER_VERTEX = 2;
-    
-    /*
-    static float squareCoords[] = { -0.5f,  0.5f, 0.0f,   // top left
-                                    -0.5f, -0.5f, 0.0f,   // bottom left
-                                     0.5f, -0.5f, 0.0f,   // bottom right
-                                     0.5f,  0.5f, 0.0f }; // top right
-
-    private final short drawOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
-	*/
-    
-    //private float vertices[];
-    private final short faces[];
-    private final float vertices[];
-    private final float vn[];
-    private final float uv[];
+  
+    private final List<Short> indices;
+    private final List<Vertex> vertices;
+    //private final short faces[];
+    //private final float vertices[];
+    //private final float vn[];
+    //private final float uv[];
     
     //private final float textureCoords[];
     
@@ -68,14 +52,10 @@ public class Mesh {
     //float color[] = { 0.2f, 0.709803922f, 0.898039216f, 1.0f };
     float color[] = { 1.0f, 0.709803922f, 0.898039216f, 1.0f };
     
-    public Mesh(float[] vertices, short[] faces, float[] vn, float[] uv) {
+    public Mesh(List<Short> indices, List<Vertex> vertices) {
     	
-    	//this.vertices = vertices;
-    	this.faces = faces;
     	this.vertices = vertices;
-    	this.vn = vn;
-    	this.uv = uv;
-    	//this.textureCoords = textureCoords;
+    	this.indices = indices;
        
     }
     
@@ -96,22 +76,57 @@ public class Mesh {
     
     public void initialize()
     {
+    
+    	
+    	int i=0;
+    	int j = 0;
+		int k = 0;
+		
+		float[] v = new float[vertices.size()*3];
+		float[] vn = new float[vertices.size()*3];
+		float[] uv = new float[vertices.size()*2];
+		short[] f = new short[indices.size()];
+		
+		for (Vertex vertex: vertices)
+		{
+			v[i++] = vertex.position.x;
+			v[i++] = vertex.position.y;
+			v[i++] = vertex.position.z;
+			
+			uv[j++] = vertex.tex.x;
+			uv[j++] = vertex.tex.y;
+			
+			vn[k++] = vertex.normal.x;
+			vn[k++] = vertex.normal.y;
+			vn[k++] = vertex.normal.z;
+			
+			
+		}
+		
+		int l = 0;
+		
+		for (Short face: indices)
+		{
+			f[l++] = face;
+		}
+		
+		
     	 // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(
         // (# of coordinate values * 4 bytes per float)
-                vertices.length * 4);
+                v.length * 4);
         bb.order(ByteOrder.nativeOrder());
         vertexBuffer = bb.asFloatBuffer();
-        vertexBuffer.put(this.vertices);
+        vertexBuffer.put(v);
         vertexBuffer.position(0);
 
         // initialize byte buffer for the draw list
         ByteBuffer dlb = ByteBuffer.allocateDirect(
         // (# of coordinate values * 2 bytes per short)
-        		faces.length * 2);
+        		f.length * 2);
         dlb.order(ByteOrder.nativeOrder());
         drawListBuffer = dlb.asShortBuffer();
-        drawListBuffer.put(faces);
+        drawListBuffer.put(f);
         drawListBuffer.position(0);
         
         /* initialize the normals */
@@ -119,7 +134,7 @@ public class Mesh {
         		vn.length * 4);
         nlb.order(ByteOrder.nativeOrder());
         normalsBuffer = nlb.asFloatBuffer();
-        normalsBuffer.put(this.vn);
+        normalsBuffer.put(vn);
         normalsBuffer.position(0);
         
         /* setup UV texcoords */
@@ -127,7 +142,7 @@ public class Mesh {
         		uv.length * 4);
         uvlb.order(ByteOrder.nativeOrder());
         texCoordsBuffer = uvlb.asFloatBuffer();
-        texCoordsBuffer.put(this.uv);
+        texCoordsBuffer.put(uv);
         texCoordsBuffer.position(0);
         
         String vertexSource = ResourceLoader.getResourceLoader().readTextFile("shaders/basic.vs");
@@ -216,7 +231,7 @@ public class Mesh {
         GLES20.glUniform1i(mTextureUniformHandle, 0);
         
         // Draw the square
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, faces.length,
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, indices.size(),
                               GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 
         // Disable vertex array

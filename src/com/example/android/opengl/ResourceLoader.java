@@ -29,6 +29,8 @@ public class ResourceLoader {
 		
 	}
 	
+	
+	
 	public void setActivity(Activity a)
 	{
 		this.mActivity = a;
@@ -44,7 +46,10 @@ public class ResourceLoader {
 		return instance;
 	}
 
-	public static void parseFace(String[] words, List<Short> vertexIndices, List<Short> textureIndices, List<Short> normalIndices)
+	public static void parseFace(String[] words, 
+			List<Short> vertexIndices, 
+			List<Short> textureIndices,
+			List<Short> normalIndices)
 	{
 		//List<Short> indices = new ArrayList<Short>();
 		String[] parts;
@@ -145,13 +150,16 @@ public class ResourceLoader {
 	public void loadMesh(String meshName, String fileName)
 	{
 		
-		List<Short> vertexIndices = new ArrayList<Short>();
-		List<Short> textureIndices = new ArrayList<Short>();
+		List<Short> finalIndices = new ArrayList<Short>();
+		List<Vertex> finalVertices = new ArrayList<Vertex>();
+		
+		List<Short> positionIndices = new ArrayList<Short>();
+		List<Short> textureCoordIndices = new ArrayList<Short>();
 		List<Short> normalIndices = new ArrayList<Short>();
 		
-		List<Vector3> vertices = new ArrayList<Vector3>();
-		List<Vector3> vertexNormals = new ArrayList<Vector3>();
-		List<Float> textureVertices = new ArrayList<Float>();
+		List<Vector3f> positionVertices = new ArrayList<Vector3f>();
+		List<Vector3f> vertexNormals = new ArrayList<Vector3f>();
+		List<Vector2f> textureVertices = new ArrayList<Vector2f>();
 		
 		
 		//List<Float> newNormals = new ArrayList<Float>();
@@ -179,51 +187,53 @@ public class ResourceLoader {
 					float y = Float.parseFloat(words[2]);
 					float z = Float.parseFloat(words[3]);
 					
-					Vector3 v = new Vector3(x, y, z);
-					vertices.add(v);
+					Vector3f v = new Vector3f(x, y, z);
+					positionVertices.add(v);
 					
 					
 				}
 				else if (words[0].equals("vt"))
 				{
-					float u = Float.parseFloat(words[1]);
-					float v = Float.parseFloat(words[2]);
+					float s = Float.parseFloat(words[1]);
+					float t = Float.parseFloat(words[2]);
 					
-					textureVertices.add(u);
+					t = 1-t;
+					Vector2f v = new Vector2f(s, t);
 					textureVertices.add(v);
+					
 					
 				}
 				
 				else if (words[0].equals("f"))
 				{				
-					parseFace(words, vertexIndices, textureIndices, normalIndices);			
+					parseFace(words, positionIndices, textureCoordIndices, normalIndices);			
 				}
 					
 			}
 			
-			for (int i=0; i<vertices.size();i++)
+			for (int i=0; i<positionVertices.size();i++)
 			{
-				vertexNormals.add(new Vector3(0,0,0));
+				vertexNormals.add(new Vector3f(0,0,0));
 			}
 			
 			// compute the normals
-			for (int i=0; i<vertexIndices.size(); i+=3)
+			for (int i=0; i<positionIndices.size(); i+=3)
 			{
-				short i1 = vertexIndices.get(i);
-				short i2 = vertexIndices.get(i+1);
-				short i3 = vertexIndices.get(i+2);
+				short i1 = positionIndices.get(i);
+				short i2 = positionIndices.get(i+1);
+				short i3 = positionIndices.get(i+2);
 				
-				Vector3 v1 = vertices.get(i1); 
-				Vector3 v2 = vertices.get(i2); 
-				Vector3 v3 = vertices.get(i3); 
+				Vector3f v1 = positionVertices.get(i1); 
+				Vector3f v2 = positionVertices.get(i2); 
+				Vector3f v3 = positionVertices.get(i3); 
 				
-				Vector3 a = v1.sub(v2);
-				Vector3 b = v1.sub(v3);
+				Vector3f a = v1.sub(v2);
+				Vector3f b = v1.sub(v3);
 				
-				Vector3 norm = Vector3.cross(a, b);
+				Vector3f norm = Vector3f.cross(a, b);
 				norm.normalize();
 				
-				Vector3 current;
+				Vector3f current;
 				current = vertexNormals.get(i1);
 				current = current.add(norm);
 				current.normalize();
@@ -242,68 +252,42 @@ public class ResourceLoader {
 				
 			}
 			
-			int i=0;
-			float[] v = new float[vertices.size()*3];
-			for (Vector3 vertex: vertices)
+			
+			short index = 0;
+			Map<String, Vertex> map = new HashMap<String, Vertex>();
+			for (int i=0;i<textureCoordIndices.size();i++)
 			{
-				v[i++] = vertex.x;
-				v[i++] = vertex.y;
-				v[i++] = vertex.z;
+				short posCoordIndex = positionIndices.get(i);
+				short textureCoordIndex = textureCoordIndices.get(i);
+				short normalIndex = normalIndices.get(i);
+				
+				String key = posCoordIndex + ":" + textureCoordIndex + ":" + normalIndex;
+				Vertex v;
+				if (map.containsKey(key))
+				{
+					v = map.get(key);
+					
+				} else {
+					
+					v = new Vertex();
+					v.position = positionVertices.get(posCoordIndex); 
+					v.tex = textureVertices.get(textureCoordIndex);
+					v.normal = vertexNormals.get(normalIndex);
+					v.index = index;
+					index++;
+				}
+				
+				finalVertices.add(v);
+				finalIndices.add(v.index);
+				
+				
+				
+				// Vector3f vn = vertexNormals.get()
 			}
+				
+		
 			
-			i = 0;
-			short[] f = new short[vertexIndices.size()];
-			for (Short face: vertexIndices)
-			{
-				f[i++] = face;
-			}
-			
-			
-			i = 0;
-			float[] vn = new float[vertexNormals.size()*3];
-			for (Vector3 vertex : vertexNormals)
-			{
-				vn[i++] = vertex.x;
-				vn[i++] = vertex.y;
-				vn[i++] = vertex.z;
-			}
-			
-			i = 0;
-			int j=0;
-			float[] uv = new float[3*textureVertices.size()];
-			for (i=0;i<textureIndices.size();i+=3)
-			{
-				float ucoord, vcoord;
-				
-				short s1 = textureIndices.get(i);
-				short s2 = textureIndices.get(i+1);
-				short s3 = textureIndices.get(i+2);
-				
-				ucoord = textureVertices.get(s1*2);
-				vcoord = textureVertices.get(s1*2 + 1);
-				uv[j++] = ucoord;
-				uv[j++] = 1-vcoord;
-				
-				ucoord = textureVertices.get(s2*2);
-				vcoord = textureVertices.get(s2*2 + 1);
-				uv[j++] = ucoord;
-				uv[j++] = 1-vcoord;
-				
-				ucoord = textureVertices.get(s3*2);
-				vcoord = textureVertices.get(s3*2 + 1);
-				uv[j++] = ucoord;
-				uv[j++] = 1-vcoord;
-				
-				
-				
-				
-				
-				
-				
-			}
-			
-			
-			Mesh mesh = new Mesh(v, f, vn, uv);
+			Mesh mesh = new Mesh(finalIndices, finalVertices);
 			meshes.put(meshName, mesh);
 			
 			Log.v(TAG, "Successfully loaded model from OBJ");
