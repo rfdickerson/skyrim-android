@@ -157,6 +157,8 @@ public class ResourceLoader {
 		List<Short> textureCoordIndices = new ArrayList<Short>();
 		List<Short> normalIndices = new ArrayList<Short>();
 		
+		//List<Vector2f> 
+		
 		List<Vector3f> positionVertices = new ArrayList<Vector3f>();
 		List<Vector3f> vertexNormals = new ArrayList<Vector3f>();
 		List<Vector2f> textureVertices = new ArrayList<Vector2f>();
@@ -280,9 +282,6 @@ public class ResourceLoader {
 				finalVertices.add(v);
 				finalIndices.add(v.index);
 				
-				
-				
-				// Vector3f vn = vertexNormals.get()
 			}
 				
 		
