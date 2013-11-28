@@ -170,7 +170,7 @@ public class Mesh {
         
         ResourceLoader loader = ResourceLoader.getResourceLoader();
         
-        mTextureDataHandle = loader.loadTexture("textures/cube.etc");
+        mTextureDataHandle = loader.loadTexture("textures/alduin.etc");
         
         Log.v(TAG, "Loading shader successful");
     }

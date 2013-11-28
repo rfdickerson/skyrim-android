@@ -48,8 +48,7 @@ public class ResourceLoader {
 
 	public static void parseFace(String[] words, 
 			List<Short> vertexIndices, 
-			List<Short> textureIndices,
-			List<Short> normalIndices)
+			List<Short> textureIndices)
 	{
 		//List<Short> indices = new ArrayList<Short>();
 		String[] parts;
@@ -59,15 +58,15 @@ public class ResourceLoader {
 			 parts = words[i].split("/");
 			 short s1 = Short.parseShort(parts[0]);
 			 short s2 = Short.parseShort(parts[1]);
-			 short s3 = Short.parseShort(parts[2]);
+			 //short s3 = Short.parseShort(parts[2]);
 			 
 			 s1--;
 			 s2--;
-			 s3--;
+			 //s3--;
 			 
 			 vertexIndices.add(s1);
 			 textureIndices.add(s2);
-			 normalIndices.add(s3);
+			 //normalIndices.add(s3);
 		}
 		
 		
@@ -203,7 +202,7 @@ public class ResourceLoader {
 				}	
 				else if (words[0].equals("f"))
 				{				
-					parseFace(words, positionIndices, textureCoordIndices, normalIndices);			
+					parseFace(words, positionIndices, textureCoordIndices);			
 				}
 					
 			}
@@ -256,9 +255,9 @@ public class ResourceLoader {
 			{
 				short posCoordIndex = positionIndices.get(i);
 				short textureCoordIndex = textureCoordIndices.get(i);
-				short normalIndex = normalIndices.get(i);
+				//short normalIndex = normalIndices.get(i);
 				
-				String key = posCoordIndex + ":" + textureCoordIndex + ":" + normalIndex;
+				String key = posCoordIndex + ":" + textureCoordIndex;
 				Vertex v;
 				if (map.containsKey(key))
 				{
@@ -269,7 +268,7 @@ public class ResourceLoader {
 					v = new Vertex();
 					v.position = positionVertices.get(posCoordIndex); 
 					v.tex = textureVertices.get(textureCoordIndex);
-					v.normal = vertexNormals.get(normalIndex);
+					v.normal = vertexNormals.get(posCoordIndex);
 					v.index = index;
 					index++;
 				}

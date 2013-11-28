@@ -35,7 +35,7 @@ public class OpenGLES20Complete extends Activity {
         //MeshLoader loader = new MeshLoader();
         ResourceLoader loader = ResourceLoader.getResourceLoader();
         loader.setActivity(this);
-        loader.loadMesh("hammer", "models/cube.obj");
+        loader.loadMesh("hammer", "models/alduin5.obj");
         
         
         mGLView = new MyGLSurfaceView(this);
