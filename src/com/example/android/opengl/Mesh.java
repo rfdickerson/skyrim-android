@@ -31,7 +31,7 @@ public class Mesh {
     private final int mTextureCoordinateDataSize = 2;
     private int mTextureDataHandle;
     
-    private float[] lightPos = {1,2,2};
+    private float[] lightPos = {5,2,2};
   
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;

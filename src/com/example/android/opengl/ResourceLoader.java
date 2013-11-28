@@ -154,7 +154,7 @@ public class ResourceLoader {
 		
 		List<Short> positionIndices = new ArrayList<Short>();
 		List<Short> textureCoordIndices = new ArrayList<Short>();
-		List<Short> normalIndices = new ArrayList<Short>();
+		//List<Short> normalIndices = new ArrayList<Short>();
 		
 		//List<Vector2f> 
 		
