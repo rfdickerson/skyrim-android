@@ -14,8 +14,7 @@ public class Vector2f {
 	public float magnitude()
 	{
 		double sum = Math.pow(this.x, 2)
-				+ Math.pow(this.y, 2)
-				;
+				+ Math.pow(this.y, 2);
 		
 		return (float)Math.sqrt(sum);
 		

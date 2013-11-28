@@ -38,6 +38,8 @@ public class Mesh {
   
     private final List<Short> indices;
     private final List<Vertex> vertices;
+    
+    
     //private final short faces[];
     //private final float vertices[];
     //private final float vn[];
@@ -54,23 +56,23 @@ public class Mesh {
     
     public Mesh(List<Short> indices, List<Vertex> vertices) {
     	
-    	this.vertices = vertices;
-    	this.indices = indices;
+    		this.vertices = vertices;
+    		this.indices = indices;
        
     }
     
     public void setLighting(float[] mvMatrix)
     {
-    	 int mvMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVMatrix");
-    	 MyGLRenderer.checkGlError("get model view matrix");
-    	 int lightLocHandle = GLES20.glGetUniformLocation(mProgram, "u_LightPos");
-    	 MyGLRenderer.checkGlError("get light location");
+    	 	int mvMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVMatrix");
+    	 	MyGLRenderer.checkGlError("get model view matrix");
+    	 	int lightLocHandle = GLES20.glGetUniformLocation(mProgram, "u_LightPos");
+    	 	MyGLRenderer.checkGlError("get light location");
     	 	 
-    	 GLES20.glUniformMatrix4fv(mvMatrixHandle, 1, false, mvMatrix, 0);
-         MyGLRenderer.checkGlError("set model view matrix");
+    	 	GLES20.glUniformMatrix4fv(mvMatrixHandle, 1, false, mvMatrix, 0);
+        MyGLRenderer.checkGlError("set model view matrix");
     	 
-         GLES20.glUniform3fv(lightLocHandle, 1, lightPos, 0);
-         MyGLRenderer.checkGlError("light location set");
+        GLES20.glUniform3fv(lightLocHandle, 1, lightPos, 0);
+        MyGLRenderer.checkGlError("light location set");
               
     }
     
@@ -191,9 +193,7 @@ public class Mesh {
         GLES20.glEnableVertexAttribArray(mPositionHandle);
         GLES20.glEnableVertexAttribArray(mNormalsHandle);
         GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
-        
-        
-
+  
         GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX,
                                      GLES20.GL_FLOAT, false,
                                      vertexStride, vertexBuffer);
@@ -210,8 +210,7 @@ public class Mesh {
         MyGLRenderer.checkGlError("set texture coordinate attribute pointer");
 
         GLES20.glUniform4fv(mColorHandle, 1, color, 0);
-
-     
+ 
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVPMatrix");
         MyGLRenderer.checkGlError("get MVP Matrix Uniform");
         
@@ -221,9 +220,7 @@ public class Mesh {
         
         setLighting(mvMatrix);     
         
-        // texture stuff
-
-     
+        // texture stuff     
         //GLES20.glEnable(GL10.GL_TEXTURE_2D);
         
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);

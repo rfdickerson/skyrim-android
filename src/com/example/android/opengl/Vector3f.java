@@ -20,8 +20,6 @@ public class Vector3f {
 				+ Math.pow(this.z, 2);
 		
 		return (float)Math.sqrt(sum);
-		
-		
 	}
 	
 	public void normalize()

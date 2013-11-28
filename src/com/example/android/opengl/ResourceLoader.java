@@ -117,8 +117,8 @@ public class ResourceLoader {
 			  GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
 			  
 		        // Set filtering
-		        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-		        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+		      GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+		      GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
 		 
 		        
 			ETC1Util.loadTexture(GLES10.GL_TEXTURE_2D, 0, 0, GLES10.GL_RGB, GLES10.GL_UNSIGNED_SHORT_5_6_5, is);
@@ -190,9 +190,7 @@ public class ResourceLoader {
 					float z = Float.parseFloat(words[3]);
 					
 					Vector3f v = new Vector3f(x, y, z);
-					positionVertices.add(v);
-					
-					
+					positionVertices.add(v);	
 				}
 				else if (words[0].equals("vt"))
 				{
@@ -202,10 +200,7 @@ public class ResourceLoader {
 					t = 1-t;
 					Vector2f v = new Vector2f(s, t);
 					textureVertices.add(v);
-					
-					
-				}
-				
+				}	
 				else if (words[0].equals("f"))
 				{				
 					parseFace(words, positionIndices, textureCoordIndices, normalIndices);			
@@ -284,8 +279,6 @@ public class ResourceLoader {
 				
 			}
 				
-		
-			
 			Mesh mesh = new Mesh(finalIndices, finalVertices);
 			meshes.put(meshName, mesh);
 			
